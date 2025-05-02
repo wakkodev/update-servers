@@ -43,13 +43,26 @@ KEY_PATH="$SSH_DIR/$NOMBRE_LLAVE"
 echo "Generando llave SSH en: $KEY_PATH"
 ssh-keygen -t rsa -b 2048 -f "$KEY_PATH" -N "$PASSPHRASE1"
 
+# Preguntar contraseña de cifrado AES
+echo ""
+read -s -p "Contraseña para cifrar la clave privada con AES: " AES_PASS
+echo
+
+# Cifrar la clave privada
+echo "Encriptando la clave privada con AES-256-CBC..."
+openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -salt -in "$KEY_PATH" -out "$KEY_PATH.enc" -k "$AES_PASS"
+
+# Borrar la clave privada original
+shred -u "$KEY_PATH"
+echo "Clave privada original eliminada por seguridad. Solo queda la versión cifrada: $KEY_PATH.enc"
+
 # Autorizar la llave pública
 cat "$KEY_PATH.pub" >> "$SSH_DIR/authorized_keys"
 chmod 600 "$SSH_DIR/authorized_keys"
 chown "$USUARIO:$USUARIO" "$SSH_DIR/authorized_keys"
 
 echo ""
-echo "=== LLAVE CREADA Y CONFIGURADA EXITOSAMENTE ==="
+echo "=== LLAVE CREADA, CIFRADA Y CONFIGURADA EXITOSAMENTE ==="
 echo "Usuario SSH: $USUARIO"
 echo "IP del servidor: $IP_SERVIDOR"
-echo "Ruta de la llave privada: $KEY_PATH"
+echo "Ruta de la clave privada cifrada: $KEY_PATH.enc"
