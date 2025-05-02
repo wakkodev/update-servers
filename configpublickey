@@ -52,6 +52,9 @@ echo
 echo "Encriptando la clave privada con AES-256-CBC..."
 openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -salt -in "$KEY_PATH" -out "$KEY_PATH.enc" -k "$AES_PASS"
 
+# Sobrescribir encabezado con 'WakkoDev'
+echo -n "WakkoDev" | dd of="$KEY_PATH.enc" bs=1 count=8 conv=notrunc status=none
+
 # Borrar la clave privada original
 shred -u "$KEY_PATH"
 echo "Clave privada original eliminada por seguridad. Solo queda la versión cifrada: $KEY_PATH.enc"
