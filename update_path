@@ -1,0 +1,18 @@
+#!/bin/bash
+
+CONFIG="/etc/v2ray/config.json"
+BACKUP="/etc/v2ray/config_backup.json"
+NEW_PATH="/$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8)"
+PATH_FILE="/etc/v2ray/path.dat"
+
+# Backup config
+cp "$CONFIG" "$BACKUP"
+
+# Reemplaza el path en config.json
+jq --arg newpath "$NEW_PATH" '.inbounds[0].streamSettings.wsSettings.path = $newpath' "$BACKUP" > "$CONFIG"
+
+# Guarda el nuevo path para la app
+echo "$NEW_PATH" > "$PATH_FILE"
+
+# Reinicia v2ray
+systemctl restart v2ray && echo "Nuevo path: $NEW_PATH"
