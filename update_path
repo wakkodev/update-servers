@@ -1,18 +1,28 @@
 #!/bin/bash
 
-CONFIG="/etc/v2ray/config.json"
-BACKUP="/etc/v2ray/config_backup.json"
-NEW_PATH="/$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8)"
-PATH_FILE="/etc/v2ray/path.dat"
+CONFIG_FILE="/etc/v2ray/config.json"
+PATH_LIST="/root/path"
+TEMP_FILE="/tmp/config.json.tmp"
 
-# Backup config
-cp "$CONFIG" "$BACKUP"
+# Elegir un path aleatorio de path.dat
+if [[ ! -f "$PATH_LIST" ]]; then
+    echo "El archivo path.dat no existe"
+    exit 1
+fi
 
-# Reemplaza el path en config.json
-jq --arg newpath "$NEW_PATH" '.inbounds[0].streamSettings.wsSettings.path = $newpath' "$BACKUP" > "$CONFIG"
+NEW_PATH=$(shuf -n 1 "$PATH_LIST")
 
-# Guarda el nuevo path para la app
-echo "$NEW_PATH" > "$PATH_FILE"
+if [[ -z "$NEW_PATH" ]]; then
+    echo "No se pudo obtener un path válido"
+    exit 1
+fi
 
-# Reinicia v2ray
-systemctl restart v2ray && echo "Nuevo path: $NEW_PATH"
+# Reemplazar el path en config.json
+jq --arg newPath "$NEW_PATH" '
+(.inbounds[]?.streamSettings?.wsSettings?.path) |= $newPath
+' "$CONFIG_FILE" > "$TEMP_FILE" && mv "$TEMP_FILE" "$CONFIG_FILE"
+
+# Reiniciar V2Ray para aplicar cambios
+systemctl restart v2ray
+
+echo "✅ Nuevo path aplicado: $NEW_PATH"
