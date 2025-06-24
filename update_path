@@ -5,7 +5,7 @@ PATH_LIST="/root/path"
 INDEX_FILE="/etc/v2ray/path.index"
 TEMP_FILE="/tmp/config.json.tmp"
 ALIAS_NAME="path"
-ALIAS_COMMAND="sudo bash /root/path"
+ALIAS_COMMAND="sudo bash /etc/v2ray/cambiar_path.sh"
 
 # Detectar archivo de configuración del shell
 if [[ "$SHELL" == *zsh ]]; then
