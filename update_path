@@ -4,7 +4,7 @@ CONFIG_FILE="/etc/v2ray/config.json"
 PATH_LIST="/root/path"
 INDEX_FILE="/etc/v2ray/path.index"
 TEMP_FILE="/tmp/config.json.tmp"
-ALIAS_NAME="path"
+ALIAS_NAME="paths"
 ALIAS_COMMAND="sudo bash /root/update_path"
 
 # Detectar archivo de configuración del shell
