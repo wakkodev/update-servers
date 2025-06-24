@@ -29,7 +29,7 @@ fi
 
 # Verificar si path.dat existe
 if [[ ! -f "$PATH_LIST" ]]; then
-    echo "🚫 El archivo path.dat no existe"
+    echo "🚫 El archivo path no existe"
     exit 1
 fi
 
