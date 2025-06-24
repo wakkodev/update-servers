@@ -3,21 +3,38 @@
 CONFIG_FILE="/etc/v2ray/config.json"
 PATH_LIST="/root/path"
 TEMP_FILE="/tmp/config.json.tmp"
+STATE_FILE="/etc/v2ray/last_path_index.dat"
 
-# Elegir un path aleatorio de path.dat
+# Verificar existencia del archivo de paths
 if [[ ! -f "$PATH_LIST" ]]; then
-    echo "El archivo path.dat no existe"
+    echo "❌ El archivo path no existe"
     exit 1
 fi
 
-NEW_PATH=$(shuf -n 1 "$PATH_LIST")
+# Leer todos los paths en un array
+mapfile -t paths < "$PATH_LIST"
+total_paths=${#paths[@]}
 
-if [[ -z "$NEW_PATH" ]]; then
-    echo "No se pudo obtener un path válido"
+if (( total_paths == 0 )); then
+    echo "❌ El archivo path está vacío"
     exit 1
 fi
 
-# Reemplazar el path en config.json
+# Leer el índice anterior del archivo o empezar desde -1
+if [[ -f "$STATE_FILE" ]]; then
+    last_index=$(<"$STATE_FILE")
+else
+    last_index=-1
+fi
+
+# Calcular el nuevo índice (cíclico)
+next_index=$(( (last_index + 1) % total_paths ))
+NEW_PATH="${paths[$next_index]}"
+
+# Guardar el nuevo índice
+echo "$next_index" > "$STATE_FILE"
+
+# Aplicar el nuevo path en el archivo JSON usando jq
 jq --arg newPath "$NEW_PATH" '
 (.inbounds[]?.streamSettings?.wsSettings?.path) |= $newPath
 ' "$CONFIG_FILE" > "$TEMP_FILE" && mv "$TEMP_FILE" "$CONFIG_FILE"
