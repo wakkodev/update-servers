@@ -42,6 +42,11 @@ fi
 mapfile -t PATHS < "$PATH_LIST"
 TOTAL_PATHS=${#PATHS[@]}
 
+if (( TOTAL_PATHS == 0 )); then
+    echo "❌ El archivo path está vacío"
+    exit 1
+fi
+
 # Leer y validar índice actual
 INDEX=$(cat "$INDEX_FILE")
 if ! [[ "$INDEX" =~ ^[0-9]+$ ]] || (( INDEX >= TOTAL_PATHS )); then
