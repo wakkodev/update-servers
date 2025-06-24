@@ -2,44 +2,65 @@
 
 CONFIG_FILE="/etc/v2ray/config.json"
 PATH_LIST="/root/path"
+INDEX_FILE="/etc/v2ray/path.index"
 TEMP_FILE="/tmp/config.json.tmp"
-STATE_FILE="/etc/v2ray/last_path_index.dat"
+ALIAS_NAME="path"
+ALIAS_COMMAND="sudo bash /root/path.sh"
 
-# Verificar existencia del archivo de paths
-if [[ ! -f "$PATH_LIST" ]]; then
-    echo "❌ El archivo path no existe"
-    exit 1
-fi
-
-# Leer todos los paths en un array
-mapfile -t paths < "$PATH_LIST"
-total_paths=${#paths[@]}
-
-if (( total_paths == 0 )); then
-    echo "❌ El archivo path está vacío"
-    exit 1
-fi
-
-# Leer el índice anterior del archivo o empezar desde -1
-if [[ -f "$STATE_FILE" ]]; then
-    last_index=$(<"$STATE_FILE")
+# Detectar archivo de configuración del shell
+if [[ "$SHELL" == *zsh ]]; then
+    SHELL_RC="$HOME/.zshrc"
 else
-    last_index=-1
+    SHELL_RC="$HOME/.bashrc"
 fi
 
-# Calcular el nuevo índice (cíclico)
-next_index=$(( (last_index + 1) % total_paths ))
-NEW_PATH="${paths[$next_index]}"
+# Agregar alias si no existe
+if ! grep -Fxq "alias $ALIAS_NAME='$ALIAS_COMMAND'" "$SHELL_RC"; then
+    echo "➕ Agregando alias '$ALIAS_NAME' a $SHELL_RC"
+    echo "alias $ALIAS_NAME='$ALIAS_COMMAND'" >> "$SHELL_RC"
 
-# Guardar el nuevo índice
-echo "$next_index" > "$STATE_FILE"
+    if [[ $- == *i* ]]; then
+        source "$SHELL_RC"
+        echo "✅ Alias '$ALIAS_NAME' activado"
+    else
+        echo "⚠️ Ejecutá 'source $SHELL_RC' o reiniciá la terminal para activar el alias"
+    fi
+fi
 
-# Aplicar el nuevo path en el archivo JSON usando jq
+# Verificar si path.dat existe
+if [[ ! -f "$PATH_LIST" ]]; then
+    echo "🚫 El archivo path.dat no existe"
+    exit 1
+fi
+
+# Crear INDEX_FILE si no existe
+if [[ ! -f "$INDEX_FILE" ]]; then
+    echo 0 > "$INDEX_FILE"
+fi
+
+# Leer paths en array
+mapfile -t PATHS < "$PATH_LIST"
+TOTAL_PATHS=${#PATHS[@]}
+
+# Leer y validar índice actual
+INDEX=$(cat "$INDEX_FILE")
+if ! [[ "$INDEX" =~ ^[0-9]+$ ]] || (( INDEX >= TOTAL_PATHS )); then
+    INDEX=0
+fi
+
+NEW_PATH="${PATHS[$INDEX]}"
+echo "🔁 Aplicando path #$((INDEX + 1)) de $TOTAL_PATHS: $NEW_PATH"
+
+# Actualizar config.json
 jq --arg newPath "$NEW_PATH" '
 (.inbounds[]?.streamSettings?.wsSettings?.path) |= $newPath
 ' "$CONFIG_FILE" > "$TEMP_FILE" && mv "$TEMP_FILE" "$CONFIG_FILE"
 
-# Reiniciar V2Ray para aplicar cambios
+# Guardar nuevo índice (siguiente path)
+NEXT_INDEX=$(( (INDEX + 1) % TOTAL_PATHS ))
+echo "$NEXT_INDEX" > "$INDEX_FILE"
+
+# Reiniciar V2Ray
 systemctl restart v2ray
 
 echo "✅ Nuevo path aplicado: $NEW_PATH"
