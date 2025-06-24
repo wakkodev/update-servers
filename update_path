@@ -54,7 +54,7 @@ if ! [[ "$INDEX" =~ ^[0-9]+$ ]] || (( INDEX >= TOTAL_PATHS )); then
 fi
 
 NEW_PATH="${PATHS[$INDEX]}"
-echo "🔁 Aplicando path #$((INDEX + 1)) de $TOTAL_PATHS: $NEW_PATH"
+echo "🔁 Aplicando path $((INDEX + 1)) de $TOTAL_PATHS: $NEW_PATH"
 
 # Actualizar config.json
 jq --arg newPath "$NEW_PATH" '
