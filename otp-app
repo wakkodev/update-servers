@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Verifica si se ejecuta como root
+if [[ $EUID -ne 0 ]]; then
+  echo "❌ Este script debe ejecutarse como root"
+  exit 1
+fi
+
+# Solicita el nombre de usuario
+read -p "👤 Nombre del usuario a configurar OTP: " USUARIO
+
+# Obtiene el home del usuario
+USER_HOME=$(eval echo "~$USUARIO")
+
+# Crea el home si no existe
+if [ ! -d "$USER_HOME" ]; then
+  echo "📁 El directorio $USER_HOME no existe. Creándolo..."
+  mkdir -p "$USER_HOME"
+  chown "$USUARIO:$USUARIO" "$USER_HOME"
+fi
+
+# Verifica si google-authenticator está instalado
+if ! command -v google-authenticator &> /dev/null; then
+  echo "⚠️ No se encontró google-authenticator. Instalando..."
+  apt update && apt install -y libpam-google-authenticator
+fi
+
+# Ruta del archivo OTP
+OTP_FILE="$USER_HOME/.google_authenticator"
+
+# Genera el secreto OTP
+echo "🔐 Generando clave secreta para $USUARIO..."
+google-authenticator -s "$OTP_FILE" -t -d -f -r 3 -R 30 -W -l "$USUARIO@$(hostname)" > /dev/null
+
+# Establece los permisos correctos
+chown "$USUARIO:$USUARIO" "$OTP_FILE"
+chmod 400 "$OTP_FILE"
+
+echo "✅ OTP configurado exitosamente para $USUARIO"
+echo "📍 Ahora escanea el código QR o agrega la clave manualmente desde el archivo:"
+echo "    $OTP_FILE"
