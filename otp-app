@@ -22,7 +22,7 @@ fi
 # Verifica si google-authenticator está instalado
 if ! command -v google-authenticator &> /dev/null; then
   echo "⚠️ No se encontró google-authenticator. Instalando..."
-  apt update && apt install -y libpam-google-authenticator
+  sudo apt update && sudo apt install -y libpam-google-authenticator
 fi
 
 # Ruta del archivo OTP
