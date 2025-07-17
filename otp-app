@@ -30,7 +30,7 @@ OTP_FILE="$USER_HOME/.google_authenticator"
 
 # Genera el secreto OTP
 echo "🔐 Generando clave secreta para $USUARIO..."
-google-authenticator -s "$OTP_FILE" -t -d -f -r 3 -R 30 -W -l "$USUARIO@$(hostname)" > /dev/null
+yes y | google-authenticator -s "$OTP_FILE" -t -d -f -r 3 -R 30 -W -l "$USUARIO@$(hostname)" > /dev/null
 
 # Establece los permisos correctos
 chown "$USUARIO:$USUARIO" "$OTP_FILE"
