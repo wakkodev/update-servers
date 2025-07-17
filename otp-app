@@ -37,8 +37,8 @@ chown "$USUARIO:$USUARIO" "$OTP_FILE"
 chmod 400 "$OTP_FILE"
 
 echo "✅ OTP configurado exitosamente para $USUARIO"
-echo "📍 Ahora escanea el código QR o agrega la clave manualmente desde el archivo:"
-echo "    $OTP_FILE"
+echo "📍 Agrega la clave manualmente desde el archivo:"
+echo "    nano $OTP_FILE"
 
 # Muestra el secreto base32
 SECRET=$(head -n 1 "$OTP_FILE")
