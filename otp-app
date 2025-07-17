@@ -42,5 +42,5 @@ echo "    $OTP_FILE"
 
 # Muestra el secreto base32
 SECRET=$(head -n 1 "$OTP_FILE")
-echo "🔑 Clave secreta OTP): $SECRET"
+echo "🔑 Clave secreta OTP: $SECRET"
 echo "📱 Puedes agregarla manualmente a tu app de autenticación (como Google Authenticator o Authy)."
