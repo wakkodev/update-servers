@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Variables
+BASE_PATH="/var/www/html/hls/wakko"
+RTMP_URL="rtmp://localhost/live/wakko"
+LOG_FILE="/var/log/ffmpeg_wakko.log"
+
+# Crear carpetas si no existen
+mkdir -p "$BASE_PATH/144p" "$BASE_PATH/360p" "$BASE_PATH/720p"
+chown -R www-data:www-data "$BASE_PATH"
+chmod -R 755 "$BASE_PATH"
+
+# Crear master.m3u8
+cat > "$BASE_PATH/master.m3u8" <<EOF
+#EXTM3U
+#EXT-X-VERSION:3
+
+# 144p - 200 kbps
+#EXT-X-STREAM-INF:BANDWIDTH=250000,RESOLUTION=256x144,CODECS="avc1.42e01e,mp4a.40.2"
+144p/index.m3u8
+
+# 360p - 800 kbps
+#EXT-X-STREAM-INF:BANDWIDTH=850000,RESOLUTION=640x360,CODECS="avc1.42e01e,mp4a.40.2"
+360p/index.m3u8
+
+# 720p - 2500 kbps
+#EXT-X-STREAM-INF:BANDWIDTH=2600000,RESOLUTION=1280x720,CODECS="avc1.4d401f,mp4a.40.2"
+720p/index.m3u8
+EOF
+
+echo "Master playlist generado en $BASE_PATH/master.m3u8"
+
+# Lanzar FFmpeg con nohup en segundo plano y redirigiendo logs
+nohup ffmpeg -i "$RTMP_URL" \
+  -filter_complex "\
+    [0:v]split=3[v1][v2][v3]; \
+    [v1]scale=w=256:h=144[v1out]; \
+    [v2]scale=w=640:h=360[v2out]; \
+    [v3]scale=w=1280:h=720[v3out]" \
+  -map [v1out] -map 0:a -c:v:0 libx264 -preset veryfast -g 48 -keyint_min 48 -sc_threshold 0 -b:v:0 200k -maxrate:v:0 250k -bufsize:v:0 500k -c:a:0 aac -ac 2 -ar 44100 -f hls \
+    -hls_time 2 -hls_list_size 6 -hls_flags delete_segments+independent_segments \
+    -hls_segment_filename "$BASE_PATH/144p/segment_%03d.ts" "$BASE_PATH/144p/index.m3u8" \
+  -map [v2out] -map 0:a -c:v:1 libx264 -preset veryfast -g 48 -keyint_min 48 -sc_threshold 0 -b:v:1 800k -maxrate:v:1 800k -bufsize:v:1 1600k -c:a:1 aac -ac 2 -ar 44100 -f hls \
+    -hls_time 2 -hls_list_size 6 -hls_flags delete_segments+independent_segments \
+    -hls_segment_filename "$BASE_PATH/360p/segment_%03d.ts" "$BASE_PATH/360p/index.m3u8" \
+  -map [v3out] -map 0:a -c:v:2 libx264 -preset veryfast -g 48 -keyint_min 48 -sc_threshold 0 -b:v:2 2500k -maxrate:v:2 2500k -bufsize:v:2 5000k -c:a:2 aac -ac 2 -ar 44100 -f hls \
+    -hls_time 2 -hls_list_size 6 -hls_flags delete_segments+independent_segments \
+    -hls_segment_filename "$BASE_PATH/720p/segment_%03d.ts" "$BASE_PATH/720p/index.m3u8" > "$LOG_FILE" 2>&1 &
+    
+echo "FFmpeg iniciado en segundo plano. Logs en $LOG_FILE"
