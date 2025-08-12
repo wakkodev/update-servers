@@ -3,6 +3,7 @@
 # Variables
 BASE_PATH="/var/www/html/hls/planetatv"
 RTMP_URL="rtmp://localhost/app/planetatv"
+PLAY_LIST="PlanetaTV.m3u8"
 LOG_FILE="/var/log/ffmpeg_planetatv.log"
 
 # Crear carpetas si no existen
@@ -11,7 +12,7 @@ chown -R www-data:www-data "$BASE_PATH"
 chmod -R 755 "$BASE_PATH"
 
 # Crear master.m3u8
-cat > "$BASE_PATH/Planeta TV.m3u8" <<EOF
+cat > "$BASE_PATH/$PLAY_LIST" <<EOF
 #EXTM3U
 #EXT-X-VERSION:3
 
@@ -28,7 +29,7 @@ cat > "$BASE_PATH/Planeta TV.m3u8" <<EOF
 720p/index.m3u8
 EOF
 
-echo "Master playlist generado en $BASE_PATH/Planeta TV.m3u8"
+echo "Master playlist generado en $BASE_PATH/$PLAY_LIST"
 
 # Lanzar FFmpeg con nohup en segundo plano y redirigiendo logs
 nohup ffmpeg -i "$RTMP_URL" \
