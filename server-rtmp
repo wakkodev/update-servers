@@ -4,7 +4,7 @@
 BASE_PATH="/var/www/html/hls/planetatv"
 RTMP_URL="rtmp://localhost/app/planetatv"
 PLAY_LIST="PlanetaTV.m3u8"
-LOG_FILE="/var/log/ffmpeg_planetatv.log"
+LOG_FILE="/var/log/planetatv.log"
 
 # Crear carpetas si no existen
 mkdir -p "$BASE_PATH/144p" "$BASE_PATH/360p" "$BASE_PATH/720p"
