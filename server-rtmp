@@ -39,13 +39,13 @@ nohup ffmpeg -i "$RTMP_URL" \
     [v2]scale=w=640:h=360[v2out]; \
     [v3]scale=w=1280:h=720[v3out]" \
   -map [v1out] -map 0:a -c:v:0 libx264 -preset veryfast -g 48 -keyint_min 48 -sc_threshold 0 -b:v:0 200k -maxrate:v:0 250k -bufsize:v:0 500k -c:a:0 aac -ac 2 -ar 44100 -f hls \
-    -hls_time 2 -hls_list_size 6 -hls_flags delete_segments+independent_segments \
+    -hls_time 20 -hls_list_size 3 -hls_flags delete_segments+independent_segments \
     -hls_segment_filename "$BASE_PATH/144p/segment_%03d.ts" "$BASE_PATH/144p/index.m3u8" \
   -map [v2out] -map 0:a -c:v:1 libx264 -preset veryfast -g 48 -keyint_min 48 -sc_threshold 0 -b:v:1 800k -maxrate:v:1 800k -bufsize:v:1 1600k -c:a:1 aac -ac 2 -ar 44100 -f hls \
-    -hls_time 2 -hls_list_size 6 -hls_flags delete_segments+independent_segments \
+    -hls_time 20 -hls_list_size 3 -hls_flags delete_segments+independent_segments \
     -hls_segment_filename "$BASE_PATH/360p/segment_%03d.ts" "$BASE_PATH/360p/index.m3u8" \
   -map [v3out] -map 0:a -c:v:2 libx264 -preset veryfast -g 48 -keyint_min 48 -sc_threshold 0 -b:v:2 2500k -maxrate:v:2 2500k -bufsize:v:2 5000k -c:a:2 aac -ac 2 -ar 44100 -f hls \
-    -hls_time 2 -hls_list_size 6 -hls_flags delete_segments+independent_segments \
+    -hls_time 20 -hls_list_size 3 -hls_flags delete_segments+independent_segments \
     -hls_segment_filename "$BASE_PATH/720p/segment_%03d.ts" "$BASE_PATH/720p/index.m3u8" > "$LOG_FILE" 2>&1 &
     
 echo "FFmpeg iniciado en segundo plano. Logs en $LOG_FILE"
