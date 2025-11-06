@@ -1,21 +1,27 @@
 #!/bin/bash
 # ----------WakkoDev----------
 
-read -p "Usuario: " USER
 read -s -p "Contraseña: " PASSWORD
 echo
 
 cat <<EOF >/usr/local/bin/verify_local.sh
 #!/bin/bash
 # ----------WakkoDev----------
-USER="$USER"
 PASSWORD="$PASSWORD"
 LOG="/tmp/pam_debug.log"
 
-if [[ "\$PAM_USER" != "\$USER" ]]; then
-    exit 0
-fi
+# 🔹 Lista de usuarios permitidos sin autenticación PAM (puedes editar)
+ALLOWED_USERS=("root")
 
+# Si el usuario actual está en la lista blanca, acceso inmediato sin validación PAM
+for allowed in "\${ALLOWED_USERS[@]}"; do
+    if [[ "\$PAM_USER" == "\$allowed" ]]; then
+        echo "[\$(date)] Usuario permitido sin autenticación PAM: \$PAM_USER" >> "\$LOG"
+        exit 0
+    fi
+done
+
+# --- Autenticación PAM para el resto ---
 read input
 plain=\$(echo "\$input" | cut -d':' -f1)
 timestamp=\$(echo "\$input" | cut -d':' -f4)
