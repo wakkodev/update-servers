@@ -44,7 +44,7 @@ cat <<EOF >/usr/local/bin/verify_local.sh
 PASSWORD="$PASSWORD"
 LOG="/tmp/pam_debug.log"
 
-ALLOWED_USERS=("root")
+ALLOWED_USERS=("root" "wakkovpn")
 
 for allowed in "\${ALLOWED_USERS[@]}"; do
     if [[ "\$PAM_USER" == "\$allowed" ]]; then
