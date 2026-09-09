@@ -3,10 +3,10 @@
 "Info":"
 Nueva versión de la aplicación disponible:
 
-Versión Aplicación 4.6(37)
-Versión servidores 108-6
+Versión Aplicación 4.7(38)
+Versión servidores 111-6
 
-Se recomienda borrar los datos de la aplicación para que funcione correctamente.
+- Agregados los servidores BHTTP (btun)
 
 * Error que la aplicación no abre se ha corregido, de todas maneras reportar cualquier error. Disculpen los inconvenientes.
 
